@@ -25,6 +25,10 @@
 // * Plot of the movie.
 // * Actors in the movie.
 
+var fs = require("fs")
+
+var moment = require("moment")
+//function to convert string to data ex: time (from moment)
 
 require("dotenv").config();
 var keys = require("./keys");
@@ -47,17 +51,77 @@ function commandInput(){
         case "movie-this":
             movieSearch()
             break; 
+        case "concert-this":
+            concertSearch()
+            break;
+        case "do-what-it-says":
+            doitwhatitsaysSearch()
+            break;
     }
 }
+
+function doitwhatitsaysSearch() {
+  fs.readFile("./random.txt","utf8",function(error,data){
+    console.log(data)
+     var inputFile=data.split(",")
+     command = inputFile[0].trim()
+     searchTerm = inputFile[1].trim() 
+     console.log("command:",command)
+     console.log("searchTerm:",searchTerm)
+     commandInput()
+
+  })
+}
+
+
+function concertSearch() {
+ 
+  console.log("https://rest.bandsintown.com/artists/" + searchTerm + "/events?app_id=codingbootcamp")
+ 
+  axios.get("https://rest.bandsintown.com/artists/" + searchTerm + "/events?app_id=codingbootcamp").then(
+      function(response) {
+        console.log(response.data);
+
+
+        for (let i = 0; i < response.data.length; i++) {
+          console.log("\nvenuename:",response.data[i].venue.name);
+
+          console.log("venuelocation:",response.data[i].venue.city,
+          response.data[i].venue.country)
+  
+          console.log("venuedate:",moment(response.data[i].datetime, "YYYY-MM-DD").format("MM/DD/YYYY"))
+
+          console.log("_____________________________________________________________________________");
+          
+        }
+
+      }
+    )
+}
+
 
 function movieSearch() {
     axios.get("http://www.omdbapi.com/?t="+ searchTerm +"&y=&plot=short&apikey=trilogy").then(
   function(response) {
     console.log(response.data);
     console.log("\nMovietitle:", response.data.Title);
+    console.log("\nMovieyear:",response.data.Year);
+    console.log("imdbRating:",response.data.imdbRating);
+
+    if (response.data.Ratings[1] != null){
+      console.log("rottenTomatoe:",response.data.Ratings[1].Value);
+    }
+    else {
+      console.log("No Rotten Tomatoe Rating:")
+    }
+
+    console.log("Country:",response.data.Country);
+    console.log("Language:",response.data.Language);
+    console.log("Plot:",response.data.Plot);
+    console.log("Actors:",response.data.Actors);
 
 
-    console.log("rottentomatoes.ratings.",response.data.Ratings[1].Value);
+    // console.log("rottentomatoes.ratings.",response.data.Ratings[1].Value);
 
     
   })
